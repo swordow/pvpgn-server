@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Dizzy
+ * Copyright (C) 2018  HarpyWar (harpywar@gmail.com)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,28 +15,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+#ifdef WIN32
 
-#ifndef __CDBHASH_H_INCLUDED__
-#define __CDBHASH_H_INCLUDED__
+#include <Windows.h>
 
-namespace pvpgn
-{
 
-	typedef unsigned int t_cdbhash;
+LONG WINAPI unhandled_handler(struct _EXCEPTION_POINTERS* e);
 
-	static inline t_cdbhash cdb_hash(const void* data, std::size_t len)
-	{
-		t_cdbhash h;
-		const char* p = (const char*)data;
-
-		for (h = 5381; len > 0; --len, ++p) {
-			h += h << 5;
-			h ^= *p;
-		}
-		return h;
-	}
-
-}
-
-#endif /* __CDBHASH_H_INCLUDED__ */
-
+#endif

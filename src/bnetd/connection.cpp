@@ -402,7 +402,7 @@ namespace pvpgn
 			temp->protocol.client.clientexe = NULL;
 			temp->protocol.client.owner = NULL;
 			temp->protocol.client.cdkey = NULL;
-			temp->protocol.client.versioncheck = NULL;
+			temp->protocol.client.versioncheck = nullptr;
 			temp->protocol.account = NULL;
 			temp->protocol.chat.channel = NULL;
 			temp->protocol.chat.last_message = now;
@@ -451,7 +451,7 @@ namespace pvpgn
 
 			list_prepend_data(conn_head, temp);
 
-			eventlog(eventlog_level_info, __FUNCTION__, "[{}][{}] sessionkey=0x{:08} sessionnum=0x{:08}", temp->socket.tcp_sock, temp->socket.udp_sock, temp->protocol.sessionkey, temp->protocol.sessionnum);
+			eventlog(eventlog_level_debug, __FUNCTION__, "[{}][{}] sessionkey=0x{:08} sessionnum=0x{:08}", temp->socket.tcp_sock, temp->socket.udp_sock, temp->protocol.sessionkey, temp->protocol.sessionnum);
 
 			return temp;
 		}
@@ -616,9 +616,6 @@ namespace pvpgn
 
 			if (c->protocol.account)
 				watchlist->dispatch(c->protocol.account, NULL, c->protocol.client.clienttag, Watch::ET_logout);
-
-			if (c->protocol.client.versioncheck)
-				versioncheck_destroy((t_versioncheck*)c->protocol.client.versioncheck); /* avoid warning */
 
 			if (c->protocol.chat.lastsender)
 				xfree((void *)c->protocol.chat.lastsender); /* avoid warning */
@@ -1224,8 +1221,6 @@ namespace pvpgn
 
 		extern void conn_set_archtag(t_connection * c, t_tag archtag)
 		{
-			char archtag_str[5];
-
 			if (!c) {
 				eventlog(eventlog_level_error, __FUNCTION__, "got NULL connection");
 				return;
@@ -1235,9 +1230,7 @@ namespace pvpgn
 				return;
 			}
 			if (c->protocol.client.archtag != archtag)
-				eventlog(eventlog_level_info, __FUNCTION__, "[{}] setting client arch to \"{}\"", conn_get_socket(c), tag_uint_to_str(archtag_str, archtag));
-
-			c->protocol.client.archtag = archtag;
+				c->protocol.client.archtag = archtag;
 		}
 
 
@@ -1323,8 +1316,8 @@ namespace pvpgn
 				eventlog(eventlog_level_error, __FUNCTION__, "got UNKNOWN clienttag \"{}\"", tag_uint_to_str(clienttag_str, clienttag));
 				return;
 			}
-			if (c->protocol.client.clienttag != clienttag) {
-				eventlog(eventlog_level_info, __FUNCTION__, "[{}] setting client type to \"{}\"", conn_get_socket(c), tag_uint_to_str(clienttag_str, clienttag));
+			if (c->protocol.client.clienttag != clienttag)
+			{
 				c->protocol.client.clienttag = clienttag;
 				if (c->protocol.chat.channel)
 					channel_update_userflags(c);
@@ -3199,34 +3192,29 @@ namespace pvpgn
 		}
 
 
-		extern t_versioncheck * conn_get_versioncheck(t_connection * c)
+		const VersionCheck *conn_get_versioncheck(t_connection *c)
 		{
 			if (!c)
 			{
 				eventlog(eventlog_level_error, __FUNCTION__, "got NULL connection");
-				return NULL;
+				return nullptr;
 			}
 
 			return c->protocol.client.versioncheck;
 		}
 
 
-		extern int conn_set_versioncheck(t_connection * c, t_versioncheck * versioncheck)
+		bool conn_set_versioncheck(t_connection *c, const VersionCheck* versioncheck)
 		{
 			if (!c)
 			{
 				eventlog(eventlog_level_error, __FUNCTION__, "got NULL connection");
-				return -1;
-			}
-			if (!versioncheck)
-			{
-				eventlog(eventlog_level_error, __FUNCTION__, "got NULL versioncheck");
-				return -1;
+				return false;
 			}
 
 			c->protocol.client.versioncheck = versioncheck;
 
-			return 0;
+			return true;
 		}
 
 		extern int conn_get_echoback(t_connection * c)
